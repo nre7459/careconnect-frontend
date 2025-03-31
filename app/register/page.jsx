@@ -39,6 +39,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
+      // Use the register function from AuthContext
       await register(formData)
       toast({
         title: "Registrierung erfolgreich",
