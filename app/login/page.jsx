@@ -18,11 +18,13 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
 
+  // Update the handleSubmit function to use the login function from AuthContext
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
+      // Use the login function from AuthContext
       await login(email, password)
       toast({
         title: "Erfolgreich angemeldet",
