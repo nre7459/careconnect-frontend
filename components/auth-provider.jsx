@@ -3,33 +3,46 @@
 import { createContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import { loginUser, registerUser, logoutUser, isAuthenticated, getCurrentUser } from "@/lib/api"
+import {
+  loginUser,
+  registerUser,
+  logoutUser,
+  isAuthenticated,
+  getCurrentUser,
+  hasRole
+} from "@/lib/api"
 
 export const AuthContext = createContext({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+  role: null,
   login: async () => {},
   register: async () => {},
   logout: () => {},
+  can: () => false
 })
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [role, setRole] = useState(null)
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
-    // Check if user is logged in on mount
+    // Authentifizierungsstatus beim Initialisieren prüfen
     const checkAuth = async () => {
       try {
         if (isAuthenticated()) {
           const userData = getCurrentUser()
           setUser(userData)
+          setRole(userData.role)
         }
       } catch (error) {
-        console.error("Auth check error:", error)
+        console.error("Auth-Check-Fehler:", error)
+        // Bei Authentifizierungsproblemen ausloggen
+        logoutUser()
       } finally {
         setIsLoading(false)
       }
@@ -41,29 +54,47 @@ export default function AuthProvider({ children }) {
   const login = async (email, password) => {
     setIsLoading(true)
     try {
-      // Validate inputs before sending to the API
+      // Eingabevalidierung
       if (!email || !password) {
-        throw new Error("Email und Passwort sind erforderlich")
+        throw new Error("E-Mail und Passwort sind erforderlich")
       }
 
-      // Echte API-Anmeldung statt der simulierten
       const response = await loginUser(email, password)
 
-      // Setzen des Benutzers aus der API-Antwort
+      // Benutzer und Rolle setzen
       setUser(response.user)
+      setRole(response.user.role)
+
+      // Rollenbasierte Weiterleitung
+      switch (response.user.role) {
+        case 'admin':
+          router.push("/users")
+          break
+        case 'caregiver':
+          router.push("/appointments")
+          break
+        case 'patient':
+          router.push("/medications")
+          break
+        case 'relative':
+          router.push("/notifications")
+          break
+        default:
+          router.push("/dashboard")
+      }
 
       toast({
-        title: "Erfolgreich angemeldet",
-        description: "Sie wurden erfolgreich angemeldet.",
+        title: "Anmeldung erfolgreich",
+        description: `Willkommen, ${response.user.name}!`
       })
 
       return response
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("Anmeldefehler:", error)
       toast({
         variant: "destructive",
         title: "Anmeldefehler",
-        description: error.message || "Fehler bei der Anmeldung. Bitte überprüfen Sie Ihre Anmeldedaten.",
+        description: error.message || "Fehler bei der Anmeldung"
       })
       throw error
     } finally {
@@ -74,26 +105,28 @@ export default function AuthProvider({ children }) {
   const register = async (userData) => {
     setIsLoading(true)
     try {
-      // Validate inputs before sending to the API
-      if (!userData.email || !userData.password || !userData.name) {
-        throw new Error("Name, E-Mail und Passwort sind erforderlich")
+      // Eingabevalidierung
+      if (!userData.email || !userData.password || !userData.name || !userData.role) {
+        throw new Error("Bitte alle erforderlichen Felder ausfüllen")
       }
 
-      // Echte API-Registrierung statt der simulierten
       const response = await registerUser(userData)
 
       toast({
         title: "Registrierung erfolgreich",
-        description: "Sie können sich jetzt anmelden.",
+        description: "Sie können sich jetzt anmelden."
       })
+
+      // Weiterleitung zur Anmeldeseite
+      router.push("/login")
 
       return response
     } catch (error) {
-      console.error("Registration error:", error)
+      console.error("Registrierungsfehler:", error)
       toast({
         variant: "destructive",
         title: "Registrierungsfehler",
-        description: error.message || "Fehler bei der Registrierung. Bitte versuchen Sie es erneut.",
+        description: error.message || "Fehler bei der Registrierung"
       })
       throw error
     } finally {
@@ -103,27 +136,32 @@ export default function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      // Echte API-Abmeldung statt der simulierten
       await logoutUser()
 
-      // Aktualisieren des lokalen Zustands
+      // Zustand zurücksetzen
       setUser(null)
+      setRole(null)
 
-      // Weiterleitung zur Anmeldeseite
+      // Zur Anmeldeseite weiterleiten
       router.push("/login")
 
       toast({
         title: "Abgemeldet",
-        description: "Sie wurden erfolgreich abgemeldet.",
+        description: "Sie wurden erfolgreich abgemeldet."
       })
     } catch (error) {
-      console.error("Logout error:", error)
+      console.error("Abmeldefehler:", error)
       toast({
         variant: "destructive",
         title: "Abmeldefehler",
-        description: "Fehler bei der Abmeldung. Bitte versuchen Sie es erneut.",
+        description: error.message || "Fehler bei der Abmeldung"
       })
     }
+  }
+
+  // Rollenbasierte Zugriffskontrolle
+  const can = (allowedRoles) => {
+    return hasRole(allowedRoles)
   }
 
   return (
@@ -132,9 +170,11 @@ export default function AuthProvider({ children }) {
             user,
             isAuthenticated: !!user,
             isLoading,
+            role,
             login,
             register,
             logout,
+            can
           }}
       >
         {children}
