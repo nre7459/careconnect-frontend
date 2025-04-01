@@ -3,6 +3,7 @@
 import { createContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
+import { loginUser, registerUser, logoutUser, isAuthenticated, getCurrentUser } from "@/lib/api"
 
 export const AuthContext = createContext({
   user: null,
@@ -23,10 +24,9 @@ export default function AuthProvider({ children }) {
     // Check if user is logged in on mount
     const checkAuth = async () => {
       try {
-        // In a real app, this would be an API call to validate the token
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
+        if (isAuthenticated()) {
+          const userData = getCurrentUser()
+          setUser(userData)
         }
       } catch (error) {
         console.error("Auth check error:", error)
@@ -41,37 +41,30 @@ export default function AuthProvider({ children }) {
   const login = async (email, password) => {
     setIsLoading(true)
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // For demo purposes, we'll simulate a successful login without making an actual API call
-      // In a real app, this would be an API call to validate credentials
-
-      // Mock validation - in a real app this would be done by the server
+      // Validate inputs before sending to the API
       if (!email || !password) {
-        throw new Error("Email and password are required")
+        throw new Error("Email und Passwort sind erforderlich")
       }
 
-      // Create a mock token
-      const mockToken = `mock-jwt-token-${Date.now()}`
+      // Echte API-Anmeldung statt der simulierten
+      const response = await loginUser(email, password)
 
-      // Store token in localStorage
-      localStorage.setItem("token", mockToken)
+      // Setzen des Benutzers aus der API-Antwort
+      setUser(response.user)
 
-      // Create a mock user based on the email
-      const mockUser = {
-        id: 1,
-        name: email.split("@")[0].charAt(0).toUpperCase() + email.split("@")[0].slice(1),
-        email: email,
-        role: "admin",
-        phone: "+49 123 456789",
-        address: "Musterstraße 1, 12345 Berlin",
-      }
+      toast({
+        title: "Erfolgreich angemeldet",
+        description: "Sie wurden erfolgreich angemeldet.",
+      })
 
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
+      return response
     } catch (error) {
       console.error("Login error:", error)
+      toast({
+        variant: "destructive",
+        title: "Anmeldefehler",
+        description: error.message || "Fehler bei der Anmeldung. Bitte überprüfen Sie Ihre Anmeldedaten.",
+      })
       throw error
     } finally {
       setIsLoading(false)
@@ -81,60 +74,70 @@ export default function AuthProvider({ children }) {
   const register = async (userData) => {
     setIsLoading(true)
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // For demo purposes, we'll simulate a successful registration without making an actual API call
-      // In a real app, this would be an API call to create a new user
-
-      // Mock validation - in a real app this would be done by the server
+      // Validate inputs before sending to the API
       if (!userData.email || !userData.password || !userData.name) {
-        throw new Error("Name, email and password are required")
+        throw new Error("Name, E-Mail und Passwort sind erforderlich")
       }
 
-      // Registration successful
+      // Echte API-Registrierung statt der simulierten
+      const response = await registerUser(userData)
+
       toast({
         title: "Registrierung erfolgreich",
         description: "Sie können sich jetzt anmelden.",
       })
 
-      return { success: true }
+      return response
     } catch (error) {
       console.error("Registration error:", error)
+      toast({
+        variant: "destructive",
+        title: "Registrierungsfehler",
+        description: error.message || "Fehler bei der Registrierung. Bitte versuchen Sie es erneut.",
+      })
       throw error
     } finally {
       setIsLoading(false)
     }
   }
 
-  const logout = () => {
-    // Clear user data and token
-    setUser(null)
-    localStorage.removeItem("user")
-    localStorage.removeItem("token")
+  const logout = async () => {
+    try {
+      // Echte API-Abmeldung statt der simulierten
+      await logoutUser()
 
-    // Redirect to login page
-    router.push("/login")
+      // Aktualisieren des lokalen Zustands
+      setUser(null)
 
-    toast({
-      title: "Abgemeldet",
-      description: "Sie wurden erfolgreich abgemeldet.",
-    })
+      // Weiterleitung zur Anmeldeseite
+      router.push("/login")
+
+      toast({
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet.",
+      })
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast({
+        variant: "destructive",
+        title: "Abmeldefehler",
+        description: "Fehler bei der Abmeldung. Bitte versuchen Sie es erneut.",
+      })
+    }
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider
+          value={{
+            user,
+            isAuthenticated: !!user,
+            isLoading,
+            login,
+            register,
+            logout,
+          }}
+      >
+        {children}
+      </AuthContext.Provider>
   )
 }
-
