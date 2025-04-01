@@ -23,7 +23,7 @@ spec:
             - name: PORT
               value: "3000"
             - name: NEXT_PUBLIC_API_URL
-              value: "https://api.careconnect.laendletech.at"
+              value: "http://careconnect-api"
           resources:
             requests:
               memory: "256Mi"
