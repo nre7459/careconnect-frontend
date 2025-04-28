@@ -44,6 +44,9 @@ jobs:
         with:
           resource-group: ${{ secrets.AKS_RG }}
           cluster-name:  ${{ secrets.AKS_NAME }}
+
+      - name: Show tree (Debug)
+        run: ls -R 
   
       # Bild-Tag im Manifest ersetzen
       - name: Stamp image tag
