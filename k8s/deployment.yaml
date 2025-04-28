@@ -1,33 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: careconnect-frontend
+  name: careconnect-deployment
   namespace: careconnect
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: careconnect-frontend
+      app: careconnect
   template:
     metadata:
       labels:
-        app: careconnect-frontend
+        app: careconnect
     spec:
       containers:
-        - name: careconnect-frontend
-          image: laendletechregistry.azurecr.io/nre7459/careconnectapp:latest
-          imagePullPolicy: Always
+        - name: careconnect-container
+          image: laendletechregistry.azurecr.io/careconnectapp:PLACEHOLDER
           ports:
             - containerPort: 3000
           env:
-            - name: PORT
-              value: "3000"
             - name: NEXT_PUBLIC_API_URL
               value: "https://careconnect.laendletech.at/api"
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
-              memory: "512Mi"
-              cpu: "200m"
