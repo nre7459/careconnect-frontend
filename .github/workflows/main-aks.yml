@@ -36,6 +36,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -44,6 +47,9 @@ jobs:
         with:
           resource-group: ${{ secrets.AKS_RG }}
           cluster-name:  ${{ secrets.AKS_NAME }}
+
+      - name: Show tree (Debug)
+        run: ls -R 
   
       # Bild-Tag im Manifest ersetzen
       - name: Stamp image tag
@@ -53,10 +59,11 @@ jobs:
       # Anwenden / Rollout
       - uses: azure/k8s-deploy@v4
         with:
+          namespace: careconnect
           manifests: |
             k8s/deployment.yaml
             k8s/service.yaml
             k8s/ingress.yaml
           images: |
-            laendletechregistry.azurecr.io/careconnect-frontend:${{ github.sha }}
+            laendletechregistry.azurecr.io/nre7459/careconnectapp:${{ github.sha }}
 
