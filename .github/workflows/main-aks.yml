@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: laendletechregistry.azurecr.io
-  IMAGE_REPO: ${{ github.repository }}
+  IMAGE_REPO: careconnectapp
 
 jobs:
 # ------------ BUILD & PUSH ------------
@@ -15,15 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: azure/login@v1                            # Azure-Login
+      - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - run: az acr login -n ${{ env.REGISTRY }}        # ACR-Login
+      - run: az acr login -n ${{ env.REGISTRY }}
 
-      - uses: docker/setup-buildx-action@v3             # BuildKit
+      - uses: docker/setup-buildx-action@v3
 
-      - uses: docker/build-push-action@v6               # Image bauen & pushen
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -36,8 +36,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         
       - uses: azure/login@v1
         with:
@@ -48,15 +47,10 @@ jobs:
           resource-group: ${{ secrets.AKS_RG }}
           cluster-name:  ${{ secrets.AKS_NAME }}
 
-      - name: Show tree (Debug)
-        run: ls -R 
-  
-      # Bild-Tag im Manifest ersetzen
-      - name: Stamp image tag
+      - name: Replace image tag in deployment
         run: |
           sed -i 's|PLACEHOLDER|${{ github.sha }}|' k8s/deployment.yaml
   
-      # Anwenden / Rollout
       - uses: azure/k8s-deploy@v4
         with:
           namespace: careconnect
@@ -65,5 +59,4 @@ jobs:
             k8s/service.yaml
             k8s/ingress.yaml
           images: |
-            laendletechregistry.azurecr.io/nre7459/careconnectapp:${{ github.sha }}
-
+            ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
