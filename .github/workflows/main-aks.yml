@@ -58,5 +58,5 @@ jobs:
             k8s/service.yaml
             k8s/ingress.yaml
           images: |
-            laendletechregistry.azurecr.io/careconnect-frontend:${{ github.sha }}
+            laendletechregistry.azurecr.io/nre7459/careconnectapp:${{ github.sha }}
 
