@@ -59,6 +59,7 @@ jobs:
       # Anwenden / Rollout
       - uses: azure/k8s-deploy@v4
         with:
+          namespace: careconnect
           manifests: |
             k8s/deployment.yaml
             k8s/service.yaml
