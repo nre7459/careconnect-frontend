@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: web } }
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+        - name: web
+          image: laendletechregistry.azurecr.io/careconnect-frontend:latest # wird im Workflow überschrieben
+          ports: [ { containerPort: 3000 } ]
