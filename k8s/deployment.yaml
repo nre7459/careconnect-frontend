@@ -21,6 +21,34 @@ spec:
           env:
             - name: NEXT_PUBLIC_API_URL
               value: "https://careconnect.laendletech.at/api"
+            # E-Mail Konfiguration
+            - name: GMAIL_USER
+              value: "laendletech@gmail.com"
+            - name: GMAIL_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: careconnect-secrets
+                  key: gmail-app-password
+            - name: RECIPIENT_EMAIL
+              value: "info@laendletech.at"
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: careconnect-secrets
+                  key: client-id
+                  optional: true
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: careconnect-secrets
+                  key: client-secret
+                  optional: true
+            - name: REFRESH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: careconnect-secrets
+                  key: refresh-token
+                  optional: true
           resources:
             requests:
               memory: "256Mi"
