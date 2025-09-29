@@ -5,7 +5,8 @@ on:
     branches: [ "main" ]
 
 env:
-  REGISTRY: laendletechregistry.azurecr.io
+  REGISTRY_NAME: laendletechregistry
+  REGISTRY_LOGIN_SERVER: laendletechregistry.azurecr.io
   IMAGE_REPO: careconnectapp
 
 jobs:
@@ -23,9 +24,25 @@ jobs:
         run: |
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Check or Create ACR
+        run: |
+          echo "Checking if ACR exists: ${{ env.REGISTRY_NAME }}"
+          if az acr show --name ${{ env.REGISTRY_NAME }} --query name -o tsv; then
+            echo "ACR found: ${{ env.REGISTRY_NAME }}"
+          else
+            echo "ACR not found. Available registries:"
+            az acr list --query "[].{Name:name, ResourceGroup:resourceGroup}" -o table
+            echo "Creating ACR: ${{ env.REGISTRY_NAME }}"
+            az acr create --resource-group ${{ secrets.AKS_RG }} --name ${{ env.REGISTRY_NAME }} --sku Basic --admin-enabled true
+            echo "ACR created successfully"
+          fi
+
       - name: Login to ACR
         run: |
-          az acr login -n ${{ env.REGISTRY }} --expose-token --output tsv --query accessToken | docker login ${{ env.REGISTRY }} --username 00000000-0000-0000-0000-000000000000 --password-stdin
+          echo "Attempting to login to ACR: ${{ env.REGISTRY_NAME }}"
+          # Simple AAD authentication
+          az acr login -n ${{ env.REGISTRY_NAME }}
+          echo "ACR login successful"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -34,8 +51,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:latest
+            ${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+            ${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_REPO }}:latest
 
 # ------------ DEPLOY TO AKS ------------
   deploy:
@@ -65,4 +82,4 @@ jobs:
             k8s/service.yaml
             k8s/ingress.yaml
           images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+            ${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
