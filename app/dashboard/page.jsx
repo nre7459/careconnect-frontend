@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/hooks/use-auth"
-import { fetchUserMedications, fetchNotifications } from "@/lib/api"
+import { fetchNotifications, fetchMedications } from "@/lib/api"
 import DashboardLayout from "@/components/dashboard-layout"
 import { Calendar, Clock, Pill, Bell } from "lucide-react"
 import Link from "next/link"
@@ -25,7 +25,7 @@ export default function DashboardPage() {
       setIsLoading(true)
       try {
         // In a real app, these would be actual API calls
-        const userMedications = await fetchUserMedications()
+        const userMedications = await fetchMedications()
         setMedications(userMedications)
 
         const userNotifications = await fetchNotifications()

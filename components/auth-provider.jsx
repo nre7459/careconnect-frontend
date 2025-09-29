@@ -3,33 +3,46 @@
 import { createContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
+import {
+  loginUser,
+  registerUser,
+  logoutUser,
+  isAuthenticated,
+  getCurrentUser,
+  hasRole
+} from "@/lib/api"
 
 export const AuthContext = createContext({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+  role: null,
   login: async () => {},
   register: async () => {},
   logout: () => {},
+  can: () => false
 })
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [role, setRole] = useState(null)
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
-    // Check if user is logged in on mount
+    // Authentifizierungsstatus beim Initialisieren prüfen
     const checkAuth = async () => {
       try {
-        // In a real app, this would be an API call to validate the token
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
+        if (isAuthenticated()) {
+          const userData = getCurrentUser()
+          setUser(userData)
+          setRole(userData.role)
         }
       } catch (error) {
-        console.error("Auth check error:", error)
+        console.error("Auth-Check-Fehler:", error)
+        // Bei Authentifizierungsproblemen ausloggen
+        logoutUser()
       } finally {
         setIsLoading(false)
       }
@@ -41,37 +54,48 @@ export default function AuthProvider({ children }) {
   const login = async (email, password) => {
     setIsLoading(true)
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // For demo purposes, we'll simulate a successful login without making an actual API call
-      // In a real app, this would be an API call to validate credentials
-
-      // Mock validation - in a real app this would be done by the server
+      // Eingabevalidierung
       if (!email || !password) {
-        throw new Error("Email and password are required")
+        throw new Error("E-Mail und Passwort sind erforderlich")
       }
 
-      // Create a mock token
-      const mockToken = `mock-jwt-token-${Date.now()}`
+      const response = await loginUser(email, password)
 
-      // Store token in localStorage
-      localStorage.setItem("token", mockToken)
+      // Benutzer und Rolle setzen
+      setUser(response.user)
+      setRole(response.user.role)
 
-      // Create a mock user based on the email
-      const mockUser = {
-        id: 1,
-        name: email.split("@")[0].charAt(0).toUpperCase() + email.split("@")[0].slice(1),
-        email: email,
-        role: "admin",
-        phone: "+49 123 456789",
-        address: "Musterstraße 1, 12345 Berlin",
+      // Rollenbasierte Weiterleitung
+      switch (response.user.role) {
+        case 'admin':
+          router.push("/users")
+          break
+        case 'caregiver':
+          router.push("/appointments")
+          break
+        case 'patient':
+          router.push("/medications")
+          break
+        case 'relative':
+          router.push("/notifications")
+          break
+        default:
+          router.push("/dashboard")
       }
 
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
+      toast({
+        title: "Anmeldung erfolgreich",
+        description: `Willkommen, ${response.user.name}!`
+      })
+
+      return response
     } catch (error) {
-      console.error("Login error:", error)
+      console.error("Anmeldefehler:", error)
+      toast({
+        variant: "destructive",
+        title: "Anmeldefehler",
+        description: error.message || "Fehler bei der Anmeldung"
+      })
       throw error
     } finally {
       setIsLoading(false)
@@ -81,60 +105,79 @@ export default function AuthProvider({ children }) {
   const register = async (userData) => {
     setIsLoading(true)
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // For demo purposes, we'll simulate a successful registration without making an actual API call
-      // In a real app, this would be an API call to create a new user
-
-      // Mock validation - in a real app this would be done by the server
-      if (!userData.email || !userData.password || !userData.name) {
-        throw new Error("Name, email and password are required")
+      // Eingabevalidierung
+      if (!userData.email || !userData.password || !userData.name || !userData.role) {
+        throw new Error("Bitte alle erforderlichen Felder ausfüllen")
       }
 
-      // Registration successful
+      const response = await registerUser(userData)
+
       toast({
         title: "Registrierung erfolgreich",
-        description: "Sie können sich jetzt anmelden.",
+        description: "Sie können sich jetzt anmelden."
       })
 
-      return { success: true }
+      // Weiterleitung zur Anmeldeseite
+      router.push("/login")
+
+      return response
     } catch (error) {
-      console.error("Registration error:", error)
+      console.error("Registrierungsfehler:", error)
+      toast({
+        variant: "destructive",
+        title: "Registrierungsfehler",
+        description: error.message || "Fehler bei der Registrierung"
+      })
       throw error
     } finally {
       setIsLoading(false)
     }
   }
 
-  const logout = () => {
-    // Clear user data and token
-    setUser(null)
-    localStorage.removeItem("user")
-    localStorage.removeItem("token")
+  const logout = async () => {
+    try {
+      await logoutUser()
 
-    // Redirect to login page
-    router.push("/login")
+      // Zustand zurücksetzen
+      setUser(null)
+      setRole(null)
 
-    toast({
-      title: "Abgemeldet",
-      description: "Sie wurden erfolgreich abgemeldet.",
-    })
+      // Zur Anmeldeseite weiterleiten
+      router.push("/login")
+
+      toast({
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet."
+      })
+    } catch (error) {
+      console.error("Abmeldefehler:", error)
+      toast({
+        variant: "destructive",
+        title: "Abmeldefehler",
+        description: error.message || "Fehler bei der Abmeldung"
+      })
+    }
+  }
+
+  // Rollenbasierte Zugriffskontrolle
+  const can = (allowedRoles) => {
+    return hasRole(allowedRoles)
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider
+          value={{
+            user,
+            isAuthenticated: !!user,
+            isLoading,
+            role,
+            login,
+            register,
+            logout,
+            can
+          }}
+      >
+        {children}
+      </AuthContext.Provider>
   )
 }
-
