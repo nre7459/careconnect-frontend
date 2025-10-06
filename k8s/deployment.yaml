@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: careconnect-container
-          image: laendletechregistry.azurecr.io/careconnectapp:PLACEHOLDER
+          image: laendletechregistry.azurecr.io/careconnectapp:latest
           ports:
             - containerPort: 3000
           env:
