@@ -5,7 +5,7 @@ export async function POST(request) {
     const data = await request.json()
     
     // E-Mail Konfiguration aus Environment Variables
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
       secure: false,
