@@ -1,10 +1,11 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 import { 
   Heart, 
   Bell, 
@@ -19,8 +20,12 @@ import {
 } from "lucide-react"
 
 export default function Home() {
+  const surveySectionRef = useRef(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   async function handleSurveySubmit(e) {
     e.preventDefault()
+    surveySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     
     const formData = new FormData(e.target)
     const data = {
@@ -40,14 +45,41 @@ export default function Home() {
     }
     
     try {
-      const response = await fetch('/api/send-survey', {
+      setIsSubmitting(true)
+      const response = await fetch('/survey-api/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       })
-      
+
+      const contentType = response.headers.get('content-type') || ''
+      const isJson = contentType.includes('application/json')
+
+      if (!response.ok) {
+        if (isJson) {
+          const payload = await response.json()
+          throw new Error(payload?.error || `Serverfehler (${response.status})`)
+        }
+
+        const text = await response.text()
+        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+          throw new Error('Server hat HTML zurückgegeben. Prüfen Sie die Deployment-URL oder Middleware-Konfiguration.')
+        }
+
+        throw new Error(text.slice(0, 200) || `Serverfehler (${response.status})`)
+      }
+
+      if (!isJson) {
+        const text = await response.text()
+        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+          throw new Error('Server hat HTML zurückgegeben. Prüfen Sie die Deployment-URL oder Middleware-Konfiguration.')
+        }
+
+        throw new Error(text.slice(0, 200) || `Unerwartetes Antwortformat (${contentType || 'unbekannt'})`)
+      }
+
       const result = await response.json()
       
       if (result.success) {
@@ -59,6 +91,8 @@ export default function Home() {
     } catch (error) {
       console.error('Fehler beim Senden:', error)
       alert('Es gab einen Fehler beim Senden Ihrer Antworten. Bitte versuchen Sie es erneut.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
   return (
@@ -447,9 +481,10 @@ export default function Home() {
                   <Button 
                     type="submit" 
                     size="lg" 
-                    className="h-14 px-12 text-lg bg-[#0B57C2] hover:bg-[#09419A] shadow-lg"
+                    className="h-14 px-12 text-lg bg-[#0B57C2] hover:bg-[#09419A] shadow-lg disabled:opacity-60 disabled:pointer-events-none"
+                    disabled={isSubmitting}
                   >
-                    <span className="mr-2">Umfrage absenden</span>
+                    <span className="mr-2">{isSubmitting ? 'Wird gesendet…' : 'Umfrage absenden'}</span>
                     <CheckCircle className="w-6 h-6" />
                   </Button>
                   <p className="text-sm text-gray-500 mt-4">
