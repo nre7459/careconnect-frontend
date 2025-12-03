@@ -16,10 +16,13 @@ import {
   Users, 
   Clock,
   Shield,
-  TrendingUp
+  TrendingUp,
+  Stethoscope,
+  UserCheck,
+  ClipboardCheck
 } from "lucide-react"
 
-export default function Home() {
+export default function PflegerPage() {
   const surveySectionRef = useRef(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -29,17 +32,24 @@ export default function Home() {
     
     const formData = new FormData(e.target)
     const data = {
-      information_frequency: formData.get('information_frequency'),
-      update_importance: formData.get('update_importance'),
-      calling_frequency: formData.get('calling_frequency'),
-      info_types: formData.getAll('info_types'),
+      years_experience: formData.get('years_experience'),
+      education_level: formData.get('education_level'),
+      work_setting: formData.get('work_setting'),
+      communication_challenges: formData.getAll('communication_challenges'),
+      time_for_documentation: formData.get('time_for_documentation'),
+      app_usage: formData.get('app_usage'),
+      desired_features: formData.getAll('desired_features'),
       app_interest: formData.get('app_interest'),
       email: formData.get('email'),
-      timestamp: new Date().toISOString()
+      full_name: formData.get('full_name'),
+      phone: formData.get('phone'),
+      workplace: formData.get('workplace'),
+      timestamp: new Date().toISOString(),
+      target_group: 'pfleger'
     }
     
     // Validierung
-    if (!data.information_frequency || !data.update_importance || !data.calling_frequency || !data.app_interest) {
+    if (!data.years_experience || !data.education_level || !data.work_setting || !data.time_for_documentation || !data.app_usage || !data.app_interest) {
       alert('Bitte beantworten Sie alle Pflichtfragen.')
       return
     }
@@ -84,7 +94,7 @@ export default function Home() {
       
       if (result.success) {
         alert('Vielen Dank für Ihre Teilnahme! Ihre Antworten wurden erfolgreich übermittelt.')
-        e.target.reset() // Formular zurücksetzen
+        e.target.reset()
       } else {
         throw new Error(result.error || 'Unbekannter Fehler')
       }
@@ -95,6 +105,7 @@ export default function Home() {
       setIsSubmitting(false)
     }
   }
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Header */}
@@ -108,10 +119,10 @@ export default function Home() {
               </h1>
             </Link>
             <nav className="flex items-center space-x-6">
-              <Link href="/" className="text-[#0B57C2] font-semibold">
+              <Link href="/" className="text-gray-600 hover:text-[#0B57C2] font-medium transition-colors">
                 Für Angehörige
               </Link>
-              <Link href="/pfleger" className="text-gray-600 hover:text-[#0B57C2] font-medium transition-colors">
+              <Link href="/pfleger" className="text-[#0B57C2] font-semibold">
                 Für Pflegekräfte
               </Link>
             </nav>
@@ -126,13 +137,13 @@ export default function Home() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-                  Für Angehörige
+                  Für Pflegekräfte
                 </Badge>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                  Immer verbunden mit Ihren Liebsten
+                  Dokumentieren Sie einmal – informieren Sie alle
                 </h1>
                 <p className="text-xl text-blue-50 leading-relaxed">
-                  Erhalten Sie regelmäßige Updates über das Wohlbefinden Ihrer Familie – ohne ständige Anrufe beim Pflegepersonal.
+                  Weniger Anrufe, mehr Pflegezeit. Ihre Dokumentation wird automatisch mit Angehörigen geteilt.
                 </p>
               </div>
               
@@ -147,12 +158,16 @@ export default function Home() {
 
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-blue-200" />
-                  <span className="text-sm text-blue-100">Tägliche Updates</span>
+                  <Clock className="w-5 h-5 text-blue-200" />
+                  <span className="text-sm text-blue-100">Zeit sparen</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-blue-200" />
-                  <span className="text-sm text-blue-100">DSGVO-konform</span>
+                  <span className="text-sm text-blue-100">Rechtssicher</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-blue-200" />
+                  <span className="text-sm text-blue-100">Einfach bedienbar</span>
                 </div>
               </div>
             </div>
@@ -160,13 +175,13 @@ export default function Home() {
             <div className="relative">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img
-                  src="/hero_angehoerige.png"
-                  alt="Pflegerin hält Hand einer Seniorin im Pflegeheim"
-                  className="w-full h-[500px] object-cover scale-x-[-1]"
+                  src="/hero_pfleger.png"
+                  alt="Pflegerin unterstützt Senior liebevoll"
+                  className="w-full h-[500px] object-cover"
                 />
               </div>
               
-              {/* Smartphone Mockup with Notifications */}
+              {/* Smartphone Mockup with Dashboard */}
               <div className="absolute -bottom-12 -right-12 lg:-bottom-12 lg:-right-12">
                 {/* Phone Frame */}
                 <div className="relative w-[220px] h-[440px] bg-gray-900 rounded-[2.5rem] shadow-2xl border-[6px] border-gray-800 p-2.5">
@@ -189,28 +204,31 @@ export default function Home() {
                     <div className="absolute top-9 left-0 right-0 bg-white border-b border-gray-200 p-3 z-10">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-[#0B57C2] rounded-lg flex items-center justify-center">
-                          <Heart className="w-5 h-5 text-white" />
+                          <Stethoscope className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-gray-900 text-xs">CareConnect</h3>
-                          <p className="text-[10px] text-gray-500">Benachrichtigungen</p>
+                          <h3 className="font-bold text-gray-900 text-xs">CareConnect Pro</h3>
+                          <p className="text-[10px] text-gray-500">Dashboard</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Notifications */}
+                    {/* Dashboard Cards */}
                     <div className="absolute top-24 left-0 right-0 bottom-0 p-3 space-y-2 overflow-hidden">
                       <div className="bg-white rounded-xl p-3 shadow-md border border-blue-100 animate-slide-in">
                         <div className="flex items-start gap-2">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <Bell className="w-4 h-4 text-[#0B57C2]" />
+                            <UserCheck className="w-4 h-4 text-[#0B57C2]" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-0.5">
-                              <p className="font-semibold text-gray-900 text-[11px]">Tagesupdate</p>
-                              <span className="text-[9px] text-gray-500">Jetzt</span>
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="font-semibold text-gray-900 text-[11px]">Patienten</p>
+                              <span className="text-[9px] text-gray-500">12 aktiv</span>
                             </div>
-                            <p className="text-[10px] text-gray-600 leading-tight">Ihre Mutter hatte einen guten Tag.</p>
+                            <div className="flex gap-1 mt-1">
+                              <div className="flex-1 h-1 bg-[#0B57C2] rounded-full"></div>
+                              <div className="flex-1 h-1 bg-gray-200 rounded-full"></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -222,10 +240,10 @@ export default function Home() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-0.5">
-                              <p className="font-semibold text-gray-900 text-[11px]">Medikamente</p>
-                              <span className="text-[9px] text-gray-500">15:00</span>
+                              <p className="font-semibold text-gray-900 text-[11px]">Aufgaben</p>
+                              <span className="text-[9px] text-gray-500">8 / 12</span>
                             </div>
-                            <p className="text-[10px] text-gray-600 leading-tight">Einnahme dokumentiert</p>
+                            <p className="text-[10px] text-gray-600 leading-tight">Vitalwerte • Medikamente</p>
                           </div>
                         </div>
                       </div>
@@ -237,12 +255,21 @@ export default function Home() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-0.5">
-                              <p className="font-semibold text-gray-900 text-[11px]">Neue Nachricht</p>
-                              <span className="text-[9px] text-gray-500">14:30</span>
+                              <p className="font-semibold text-gray-900 text-[11px]">Nachrichten</p>
+                              <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">3</span>
                             </div>
-                            <p className="text-[10px] text-gray-600 leading-tight">Anna: "Sehr fröhlich heute"</p>
+                            <p className="text-[10px] text-gray-600 leading-tight">Angehörige haben Fragen</p>
                           </div>
                         </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-[#0B57C2] to-[#084A9E] rounded-xl p-3 shadow-md text-white">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-semibold text-[11px]">Zeit gespart</p>
+                          <Clock className="w-4 h-4 text-white/80" />
+                        </div>
+                        <p className="text-xl font-bold">45 Min</p>
+                        <p className="text-[9px] text-white/80 mt-0.5">Heute</p>
                       </div>
                     </div>
                   </div>
@@ -262,26 +289,26 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div className="order-2 lg:order-1">
               <img
-                src="/cc_1.png"
-                alt="Familie und Senior gemeinsam am Tisch"
+                src="/cc_3.png"
+                alt="Pflegerin und Seniorin in herzlicher Umarmung"
                 className="rounded-2xl shadow-2xl w-full h-[400px] object-cover"
               />
             </div>
             <div className="order-1 lg:order-2 space-y-6">
               <h2 className="text-4xl font-bold text-gray-900">
-                Bleiben Sie informiert, ohne zu stören
+                Mehr Zeit für das Wesentliche: Ihre Patienten
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Wir verstehen Ihre Sorgen. Als Angehörige möchten Sie wissen, wie es Ihrer Familie geht – aber Sie wollen das Pflegepersonal nicht bei ihrer wichtigen Arbeit unterbrechen.
+                Wir wissen, wie viel Sie täglich leisten. CareConnect reduziert Ihren administrativen Aufwand und gibt Ihnen mehr Zeit für die Pflege.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-[#0B57C2] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="w-4 h-4 text-white" />
+                    <Clock className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Automatische Updates</h3>
-                    <p className="text-gray-600">Erhalten Sie Benachrichtigungen über Gesundheit, Mahlzeiten und Aktivitäten</p>
+                    <h3 className="font-semibold text-gray-900">Zeit sparen</h3>
+                    <p className="text-gray-600">Bis zu 60 Minuten pro Schicht durch weniger Anrufe und doppelte Dokumentation</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -289,17 +316,17 @@ export default function Home() {
                     <MessageSquare className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Direkter Kontakt</h3>
-                    <p className="text-gray-600">Chatten Sie mit dem Pflegeteam, wenn Sie Fragen haben</p>
+                    <h3 className="font-semibold text-gray-900">Asynchrone Kommunikation</h3>
+                    <p className="text-gray-600">Beantworten Sie Nachrichten, wenn es in Ihren Arbeitsablauf passt</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-[#0B57C2] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bell className="w-4 h-4 text-white" />
+                    <Shield className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Wichtige Ereignisse</h3>
-                    <p className="text-gray-600">Sofortige Benachrichtigung bei wichtigen Vorkommnissen</p>
+                    <h3 className="font-semibold text-gray-900">Rechtssichere Dokumentation</h3>
+                    <p className="text-gray-600">Alle Kommunikation ist nachvollziehbar und rechtssicher dokumentiert</p>
                   </div>
                 </li>
               </ul>
@@ -314,10 +341,10 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div className="space-y-6">
               <h2 className="text-4xl font-bold text-gray-900">
-                So einfach funktioniert's
+                So funktioniert CareConnect
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                CareConnect verbindet Sie nahtlos mit der Pflegeeinrichtung – transparent, sicher und jederzeit verfügbar.
+                Integrieren Sie CareConnect nahtlos in Ihren Arbeitsalltag – ohne zusätzlichen Aufwand.
               </p>
               <div className="space-y-6">
                 <div className="flex gap-4">
@@ -327,8 +354,8 @@ export default function Home() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-xl text-gray-900 mb-2">Anmelden & Verbinden</h3>
-                    <p className="text-gray-600">Erstellen Sie Ihr Profil und verbinden Sie sich mit der Pflegeeinrichtung</p>
+                    <h3 className="font-semibold text-xl text-gray-900 mb-2">Dokumentieren wie gewohnt</h3>
+                    <p className="text-gray-600">Erfassen Sie Vitalwerte, Medikamente und Notizen in CareConnect</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -338,8 +365,8 @@ export default function Home() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-xl text-gray-900 mb-2">Updates erhalten</h3>
-                    <p className="text-gray-600">Das Pflegepersonal teilt automatisch wichtige Informationen mit Ihnen</p>
+                    <h3 className="font-semibold text-xl text-gray-900 mb-2">Automatisch teilen</h3>
+                    <p className="text-gray-600">Relevante Informationen werden automatisch mit Angehörigen geteilt</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -349,16 +376,16 @@ export default function Home() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-xl text-gray-900 mb-2">Beruhigt sein</h3>
-                    <p className="text-gray-600">Sie wissen jederzeit, dass es Ihren Liebsten gut geht</p>
+                    <h3 className="font-semibold text-xl text-gray-900 mb-2">Konzentrieren Sie sich auf Pflege</h3>
+                    <p className="text-gray-600">Weniger Unterbrechungen, mehr Zeit für Ihre wichtige Arbeit</p>
                   </div>
                 </div>
               </div>
             </div>
             <div>
               <img
-                src="/cc_2.png"
-                alt="Pflegerin im Gespräch mit Senior"
+                src="/cc_4.png"
+                alt="Gemeinsame Zeit zwischen Generationen"
                 className="rounded-2xl shadow-2xl w-full h-[500px] object-cover"
               />
             </div>
@@ -369,182 +396,308 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-16 bg-blue-50/40">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">Warum CareConnect?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">Vorteile für Pflegekräfte</h2>
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <div className="bg-white shadow-md rounded-2xl p-6 text-center border border-blue-100">
               <div className="w-12 h-12 bg-[#0B57C2]/10 text-[#0B57C2] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bell className="w-6 h-6" />
+                <Clock className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Aktuelle Informationen</h3>
-              <p className="text-gray-600">Pflege-Updates, Termine und Berichte landen automatisch bei den Angehörigen.</p>
+              <h3 className="text-xl font-semibold mb-2">Zeit sparen</h3>
+              <p className="text-gray-600">Keine Unterbrechungen mehr durch Anrufe. Dokumentieren Sie einmal und alle werden informiert.</p>
             </div>
             <div className="bg-white shadow-md rounded-2xl p-6 text-center border border-blue-100">
               <div className="w-12 h-12 bg-[#0B57C2]/10 text-[#0B57C2] rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-6 h-6" />
+                <Shield className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Direkter Austausch</h3>
-              <p className="text-gray-600">Chat-Funktionen bringen Pflegeteam und Angehörige jederzeit zusammen.</p>
+              <h3 className="text-xl font-semibold mb-2">Rechtssicherheit</h3>
+              <p className="text-gray-600">Lückenlose Dokumentation und nachvollziehbare Kommunikation mit Zeitstempeln.</p>
             </div>
             <div className="bg-white shadow-md rounded-2xl p-6 text-center border border-blue-100">
               <div className="w-12 h-12 bg-[#0B57C2]/10 text-[#0B57C2] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Smartphone className="w-6 h-6" />
+                <Heart className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Einfach starten</h3>
-              <p className="text-gray-600">Intuitive Oberfläche, kein Installationsaufwand – sofort einsatzbereit.</p>
+              <h3 className="text-xl font-semibold mb-2">Mehr Zeit für Pflege</h3>
+              <p className="text-gray-600">Weniger administrative Aufgaben bedeutet mehr Zeit für Ihre Patienten.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Survey Section */}
-      <section id="survey-section" className="py-16 bg-white">
+      <section id="survey-section" ref={surveySectionRef} className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4 text-gray-900">
-                Ihre Meinung zählt
+                Ihre Meinung als Pflegekraft ist wertvoll
               </h2>
               <p className="text-lg text-gray-600">
-                Die Umfrage hilft uns, die Bedürfnisse von Angehörigen besser zu verstehen.
+                Helfen Sie uns, CareConnect optimal auf Ihre Bedürfnisse abzustimmen.
               </p>
             </div>
 
             <Card className="p-8 shadow-lg bg-white border border-blue-100">
               <form className="space-y-8" onSubmit={handleSurveySubmit}>
-                {/* Question 1 */}
+                {/* Personal Information */}
+                <div className="space-y-6 p-6 bg-blue-50/40 rounded-xl">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Persönliche Angaben</h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-900">
+                        Name (optional)
+                      </label>
+                      <Input 
+                        type="text" 
+                        placeholder="Ihr vollständiger Name" 
+                        className="w-full h-12 text-base border-2 border-gray-300 focus:border-[#0B57C2]"
+                        name="full_name"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-900">
+                        Arbeitsort (optional)
+                      </label>
+                      <Input 
+                        type="text" 
+                        placeholder="Name der Pflegeeinrichtung" 
+                        className="w-full h-12 text-base border-2 border-gray-300 focus:border-[#0B57C2]"
+                        name="workplace"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-900">
+                      Telefonnummer (optional)
+                    </label>
+                    <Input 
+                      type="tel" 
+                      placeholder="Ihre Telefonnummer" 
+                      className="w-full h-12 text-base border-2 border-gray-300 focus:border-[#0B57C2]"
+                      name="phone"
+                    />
+                  </div>
+                </div>
+
+                {/* Question 1 - Experience */}
                 <div className="space-y-4">
                   <label className="text-lg font-semibold text-gray-900">
-                    1. Wie oft fühlen Sie sich über den Zustand Ihres Familienmitglieds in der Pflegeeinrichtung informiert?
+                    1. Wie lange arbeiten Sie bereits im Pflegebereich? <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="information_frequency" value="sehr_haeufig" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Sehr häufig - ich weiß immer, was los ist</span>
+                      <input type="radio" name="years_experience" value="unter_1" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Unter 1 Jahr</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="information_frequency" value="haefig" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Häufig - meistens bin ich informiert</span>
+                      <input type="radio" name="years_experience" value="1_3" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">1-3 Jahre</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="information_frequency" value="manchmal" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Manchmal - ich erfahre wichtige Dinge</span>
+                      <input type="radio" name="years_experience" value="4_7" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">4-7 Jahre</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="information_frequency" value="selten" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Selten - ich fühle mich oft uninformiert</span>
+                      <input type="radio" name="years_experience" value="8_15" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">8-15 Jahre</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="information_frequency" value="nie" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Nie - ich bin meist uninformiert</span>
+                      <input type="radio" name="years_experience" value="ueber_15" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Über 15 Jahre</span>
                     </label>
                   </div>
                 </div>
 
-                {/* Question 2 */}
+                {/* Question 2 - Education */}
                 <div className="space-y-4">
                   <label className="text-lg font-semibold text-gray-900">
-                    2. Wie wichtig wären Ihnen regelmäßige Updates vom Pflegepersonal?
+                    2. Welche Ausbildung haben Sie absolviert? <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="update_importance" value="sehr_wichtig" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Sehr wichtig - das würde mir sehr helfen</span>
+                      <input type="radio" name="education_level" value="pflegehelfer" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Pflegehelfer/in</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="update_importance" value="wichtig" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Wichtig - das wäre eine gute Ergänzung</span>
+                      <input type="radio" name="education_level" value="pflegefachkraft" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Pflegefachkraft (3-jährige Ausbildung)</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="update_importance" value="neutral" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Neutral - ich bin unentschieden</span>
+                      <input type="radio" name="education_level" value="bachelor" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Bachelor Pflegewissenschaft/Pflegemanagement</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="update_importance" value="weniger_wichtig" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Weniger wichtig - ich komme gut ohne aus</span>
+                      <input type="radio" name="education_level" value="master" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Master oder höher</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="update_importance" value="unwichtig" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Unwichtig - ich brauche das nicht</span>
+                      <input type="radio" name="education_level" value="in_ausbildung" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Aktuell in Ausbildung/Studium</span>
                     </label>
                   </div>
                 </div>
 
-                {/* Question 3 */}
+                {/* Question 3 - Work Setting */}
                 <div className="space-y-4">
                   <label className="text-lg font-semibold text-gray-900">
-                    3. Wie oft rufen Sie das Pflegepersonal an, um nach Ihrem Familienmitglied zu fragen?
+                    3. In welchem Bereich arbeiten Sie hauptsächlich? <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="calling_frequency" value="taeglich" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Täglich oder fast täglich</span>
+                      <input type="radio" name="work_setting" value="pflegeheim" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Pflegeheim/Seniorenresidenz</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="calling_frequency" value="mehrmals_woche" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Mehrmals pro Woche</span>
+                      <input type="radio" name="work_setting" value="krankenhaus" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Krankenhaus</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="calling_frequency" value="einmal_woche" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Einmal pro Woche</span>
+                      <input type="radio" name="work_setting" value="ambulant" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Ambulanter Pflegedienst</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="calling_frequency" value="selten" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Selten - nur bei besonderen Anlässen</span>
+                      <input type="radio" name="work_setting" value="tagespflege" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Tagespflege</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
-                      <input type="radio" name="calling_frequency" value="nie" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Nie - ich rufe nicht an</span>
+                      <input type="radio" name="work_setting" value="sonstiges" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Sonstiges</span>
                     </label>
                   </div>
                 </div>
 
-                {/* Question 4 */}
+                {/* Question 4 - Communication Challenges */}
                 <div className="space-y-4">
                   <label className="text-lg font-semibold text-gray-900">
-                    4. Welche Art von Informationen würden Sie am meisten schätzen?
+                    4. Welche Herausforderungen erleben Sie bei der Kommunikation mit Angehörigen?
                   </label>
                   <div className="grid md:grid-cols-2 gap-4">
                     <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <input type="checkbox" name="info_types" value="gesundheitszustand" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Gesundheitszustand und Vitalwerte</span>
+                      <input type="checkbox" name="communication_challenges" value="zeitaufwand" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Zu zeitaufwändig</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <input type="checkbox" name="info_types" value="medikamente" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Medikamenten-Einnahme</span>
+                      <input type="checkbox" name="communication_challenges" value="unterbrechungen" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Ständige Unterbrechungen</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <input type="checkbox" name="info_types" value="aktivitaeten" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Tägliche Aktivitäten und Mahlzeiten</span>
+                      <input type="checkbox" name="communication_challenges" value="wiederholungen" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Wiederholte Erklärungen</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <input type="checkbox" name="info_types" value="besuche" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Besuche und soziale Kontakte</span>
+                      <input type="checkbox" name="communication_challenges" value="erreichbarkeit" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Schwierige Erreichbarkeit</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <input type="checkbox" name="info_types" value="stimmung" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Stimmung und Wohlbefinden</span>
+                      <input type="checkbox" name="communication_challenges" value="dokumentation" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Doppelte Dokumentation</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                      <input type="checkbox" name="info_types" value="notfaelle" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Notfälle und wichtige Ereignisse</span>
+                      <input type="checkbox" name="communication_challenges" value="keine" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Keine Herausforderungen</span>
                     </label>
                   </div>
                 </div>
 
-                {/* Question 5 */}
+                {/* Question 5 - Time for Documentation */}
                 <div className="space-y-4">
                   <label className="text-lg font-semibold text-gray-900">
-                    5. Würden Sie eine App oder Website nutzen, die Ihnen automatisch Updates vom Pflegepersonal sendet?
+                    5. Wie viel Zeit verbringen Sie täglich mit Dokumentation? <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="time_for_documentation" value="unter_30min" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Unter 30 Minuten</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="time_for_documentation" value="30_60min" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">30-60 Minuten</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="time_for_documentation" value="1_2std" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">1-2 Stunden</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="time_for_documentation" value="ueber_2std" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Über 2 Stunden</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Question 6 - App Usage */}
+                <div className="space-y-4">
+                  <label className="text-lg font-semibold text-gray-900">
+                    6. Wie sicher fühlen Sie sich im Umgang mit digitalen Tools/Apps? <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="app_usage" value="sehr_sicher" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Sehr sicher - ich nutze täglich verschiedene Apps</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="app_usage" value="sicher" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Sicher - ich komme gut zurecht</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="app_usage" value="etwas_unsicher" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Etwas unsicher - ich brauche manchmal Hilfe</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                      <input type="radio" name="app_usage" value="unsicher" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Unsicher - neue Apps sind eine Herausforderung</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Question 7 - Desired Features */}
+                <div className="space-y-4">
+                  <label className="text-lg font-semibold text-gray-900">
+                    7. Welche Funktionen wären für Sie am wichtigsten?
+                  </label>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input type="checkbox" name="desired_features" value="schnelle_dokumentation" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Schnelle Dokumentation</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input type="checkbox" name="desired_features" value="automatische_updates" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Automatische Updates an Angehörige</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input type="checkbox" name="desired_features" value="chat_funktion" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Chat-Funktion</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input type="checkbox" name="desired_features" value="spracherkennung" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Spracherkennung für Notizen</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input type="checkbox" name="desired_features" value="medikamentenplan" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Digitaler Medikamentenplan</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <input type="checkbox" name="desired_features" value="dienstplanung" className="w-4 h-4 text-[#0B57C2]" />
+                      <span className="text-gray-700">Dienstplanung & Übergaben</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Question 8 - App Interest */}
+                <div className="space-y-4">
+                  <label className="text-lg font-semibold text-gray-900">
+                    8. Würden Sie eine App wie CareConnect in Ihrem Arbeitsalltag nutzen? <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-3">
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
                       <input type="radio" name="app_interest" value="definitiv" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Definitiv - das würde mir sehr helfen</span>
+                      <span className="text-gray-700">Definitiv - das würde meine Arbeit erleichtern</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
                       <input type="radio" name="app_interest" value="wahrscheinlich" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Wahrscheinlich - das klingt gut</span>
+                      <span className="text-gray-700">Wahrscheinlich - wenn es intuitiv ist</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
                       <input type="radio" name="app_interest" value="vielleicht" className="w-4 h-4 text-[#0B57C2]" />
@@ -552,7 +705,7 @@ export default function Home() {
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
                       <input type="radio" name="app_interest" value="unwahrscheinlich" className="w-4 h-4 text-[#0B57C2]" />
-                      <span className="text-gray-700">Unwahrscheinlich - ich bevorzuge Anrufe</span>
+                      <span className="text-gray-700">Unwahrscheinlich - ich bevorzuge bisherige Methoden</span>
                     </label>
                     <label className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
                       <input type="radio" name="app_interest" value="nein" className="w-4 h-4 text-[#0B57C2]" />
@@ -564,16 +717,16 @@ export default function Home() {
                 {/* Email for Results */}
                 <div className="space-y-4 pt-6 border-t border-gray-200">
                   <label className="text-lg font-semibold text-gray-900">
-                    Möchten Sie über die Ergebnisse informiert werden? (Optional)
+                    E-Mail-Adresse für Ergebnisse und Updates (Optional)
                   </label>
                   <Input 
                     type="email" 
-                    placeholder="Ihre E-Mail-Adresse (optional)" 
+                    placeholder="Ihre E-Mail-Adresse" 
                     className="w-full h-12 text-lg border-2 border-gray-300 focus:border-[#0B57C2]"
                     name="email"
                   />
                   <p className="text-sm text-gray-500">
-                    Wir senden Ihnen die Umfrage-Ergebnisse und informieren Sie, wenn CareConnect verfügbar ist.
+                    Wir informieren Sie über die Umfrage-Ergebnisse und den Start von CareConnect.
                   </p>
                 </div>
 
@@ -589,7 +742,7 @@ export default function Home() {
                     <CheckCircle className="w-6 h-6" />
                   </Button>
                   <p className="text-sm text-gray-500 mt-4">
-                    Vielen Dank für Ihre Teilnahme! Ihre Antworten helfen uns, die beste Lösung zu entwickeln.
+                    Vielen Dank für Ihre Teilnahme! Ihre Expertise hilft uns, die beste Lösung zu entwickeln.
                   </p>
                 </div>
               </form>
@@ -614,7 +767,7 @@ export default function Home() {
                   CareConnect ist unser <strong>Innovationsprojekt</strong>, mit dem wir die Kommunikation zwischen Pflegeeinrichtungen und Angehörigen verbessern möchten.
                 </p>
                 <p className="text-base text-gray-600">
-                  Ihre Teilnahme an dieser Umfrage hilft uns, die tatsächlichen Bedürfnisse von Angehörigen zu verstehen und eine Lösung zu entwickeln, die wirklich einen Unterschied macht.
+                  Ihre Erfahrungen aus der Praxis sind entscheidend für die Entwicklung einer Lösung, die wirklich funktioniert und Ihren Arbeitsalltag erleichtert.
                 </p>
               </div>
             </Card>
@@ -637,11 +790,10 @@ export default function Home() {
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Produkt</h4>
+              <h4 className="font-semibold mb-4">Zielgruppen</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="#" className="hover:text-white">Features</Link></li>
-                <li><Link href="#" className="hover:text-white">Preise</Link></li>
-                <li><Link href="#" className="hover:text-white">Demo</Link></li>
+                <li><Link href="/" className="hover:text-white">Für Angehörige</Link></li>
+                <li><Link href="/pfleger" className="hover:text-white">Für Pflegekräfte</Link></li>
               </ul>
             </div>
             
@@ -672,3 +824,4 @@ export default function Home() {
     </div>
   )
 }
+
